@@ -542,7 +542,8 @@ export const mainResponses: MainResponses = {
     [ToMain.OPEN_FOLDER2]: (a) => {
         const receiveFOLDER = {
             MEDIA: () => addDrawerFolder(a, "media"), // menuClick
-            AUDIO: () => addDrawerFolder(a, "audio") // menuClick
+            AUDIO: () => addDrawerFolder(a, "audio"), // menuClick
+            POWERPOINT: () => addDrawerFolder(a, "powerpoint") // menuClick
         }
 
         if (!receiveFOLDER[a.channel]) return
