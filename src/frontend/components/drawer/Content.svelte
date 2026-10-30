@@ -6,6 +6,7 @@
     import Scripture from "./bible/Scripture.svelte"
     import Calendar from "./calendar/Calendar.svelte"
     import Media from "./media/Media.svelte"
+    import PowerPoints from "./powerpoint/PowerPoints.svelte"
     import Actions from "./pages/Actions.svelte"
     import Interactions from "./pages/Interactions.svelte"
     import OBS from "./pages/OBS.svelte"
@@ -57,6 +58,8 @@
         <Media {active} {searchValue} bind:streams />
     {:else if id === "audio"}
         <Audio {active} {searchValue} />
+    {:else if id === "powerpoint"}
+        <PowerPoints {active} {searchValue} />
     {:else if id === "overlays"}
         <Overlays {active} {searchValue} />
     {:else if id === "templates"}

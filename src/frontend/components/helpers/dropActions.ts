@@ -214,6 +214,9 @@ export const dropActions = {
             data = data.filter((a) => a.type !== "url")
         } else if (drag.id === "audio" || drag.id === "audio_effect") {
             data = data.map((a) => ({ id: a.path, name: removeExtension(a.name), type: "audio" }))
+        } else if (drag.id === "powerpoint") {
+            // kept as a PowerPoint item (played with its animations), not converted to slides
+            data = data.map((a) => ({ id: a.path, name: removeExtension(a.name), type: "ppt" }))
         } else if (drag.id === "overlay") {
             data = data.map((a) => ({ id: a, type: "overlay" }))
         } else if (drag.id === "effect") {
