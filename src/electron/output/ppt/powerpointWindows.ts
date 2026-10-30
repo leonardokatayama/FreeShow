@@ -110,8 +110,16 @@ class PowerPointBridge {
     stop() {
         if (!this.process) return
         // closing stdin makes the script close the presentation and exit by itself
-        this.process.stdin.end()
         const child = this.process
+        child.stdin.end()
+        // the next request starts a new process instead of writing to the closed one
+        this.process = null
+        this.buffer = ""
+        this.pending.forEach(({ reject, timer }) => {
+            clearTimeout(timer)
+            reject(new Error("PowerPoint bridge stopped"))
+        })
+        this.pending.clear()
         setTimeout(() => {
             if (child.exitCode === null) child.kill()
         }, 10000)
@@ -190,7 +198,7 @@ export async function windowsPresentationControl(action: string, index?: number)
 
 export async function stopWindowsSlideshow() {
     if (!currentPath) return
-    session++
+    const id = ++session
     stopPolling()
 
     try {
@@ -198,6 +206,10 @@ export async function stopWindowsSlideshow() {
     } catch (err) {
         console.error("PowerPoint CLOSE", err)
     }
+
+    // a new slide show started while this one was closing: the bridge is already running it
+    if (id !== session) return
+
     bridge.stop()
     ended()
 }
