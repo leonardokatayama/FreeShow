@@ -1,0 +1,90 @@
+{
+  "verdict": "fail",
+  "criteria": [
+    {
+      "id": "PPTLIB-01",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user). Inspection: tabs.ts powerpoint after functions; Content.svelte/Navigation.svelte/MaterialDrawerTab.svelte include it."
+    },
+    {
+      "id": "PPTLIB-02",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user) for the tab listing. pptLibrary.test.ts asserts getDataFolderPath('powerpoint'); PowerPointTabs.svelte shows fixed 'library'."
+    },
+    {
+      "id": "PPTLIB-03",
+      "status": "covered",
+      "evidence": "pptLibrary.test.ts: copy to library, picker filter ppt/pptx/key, 'Culto (2).pptx' suffix, 'Song (4).pptx', cancelled picker returns []."
+    },
+    {
+      "id": "PPTLIB-04",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user). OPEN_FOLDER POWERPOINT -> addDrawerFolder; READ_FOLDER filtered to ppt."
+    },
+    {
+      "id": "PPTLIB-05",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user). click sets activeShow type ppt."
+    },
+    {
+      "id": "PPTLIB-06",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user). drag id powerpoint -> type ppt; dblclick addProjectItem ppt."
+    },
+    {
+      "id": "PPTLIB-07",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user). Import.svelte trimmed to FreeShow, clipboard, PDF, PowerPoint, txt, CSV, Word."
+    },
+    {
+      "id": "PPTLIB-08",
+      "status": "imprecise",
+      "evidence": "Manual test pending (accepted by the user). importPresentationsToProject -> PRESENTATION_ADD + addToProject('ppt')."
+    }
+  ],
+  "mutations": [
+    {
+      "description": "removed 'key' from picker extensions",
+      "location": "src/electron/output/ppt/pptLibrary.ts:6",
+      "killed": true
+    },
+    {
+      "description": "library folder id powerpoint -> shows",
+      "location": "src/electron/output/ppt/pptLibrary.ts:10",
+      "killed": true
+    },
+    {
+      "description": "getFreeFileName always returns original name",
+      "location": "src/electron/output/ppt/pptLibrary.ts:19",
+      "killed": true
+    },
+    {
+      "description": "inverted already-in-library check",
+      "location": "src/electron/output/ppt/pptLibrary.ts:33",
+      "killed": true
+    },
+    {
+      "description": "removed cancelled-picker early return",
+      "location": "src/electron/output/ppt/pptLibrary.ts:28",
+      "killed": true
+    }
+  ],
+  "mutations_skipped": null,
+  "security": {
+    "reviewed": true,
+    "findings": []
+  },
+  "gaps": [
+    "PPTLIB-01,02(tab listing),04,05,06,07,08: Svelte UI, no automated assertion possible in the node-only vitest setup; implemented per code inspection; manual test on the Windows build pending, accepted by the user."
+  ],
+  "notes": "Partial mode; affected gate passed; 5/5 mutations killed in the Electron library logic. Closed as abandoned (no pass seal) by the user's decision to accept UI criteria as a pending manual test.",
+  "schema_version": 1,
+  "feature": "0001-powerpoint-library-tab-and-cleaner-import-menu",
+  "run": "r20261030T114731-2987",
+  "fingerprint": "tree:411e25385a7e0ea13834f403189541422a10a25e",
+  "base": "43e74fbcc2c2e34a4096aacf8a0f60950ae3eec7",
+  "head": "7932d1ac38863cd327519e38e83a378740e27bb1",
+  "risk_touched": [],
+  "mode": "partial",
+  "recorded_at": "2026-10-30T12:18:46Z"
+}

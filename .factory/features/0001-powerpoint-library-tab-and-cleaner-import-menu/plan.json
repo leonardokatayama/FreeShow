@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "path": "deep",
+  "feature": "0001-powerpoint-library-tab-and-cleaner-import-menu",
+  "approval": {
+    "plan_hash": "sha256:9628fc0b549d6291541fa0f2364010f83a4ae2b2ea3ba92881b1b9686fa53fab",
+    "spec_hash": "sha256:987ac232a12711b120a4a9647a12229bd3d3fb0940451c7acaddd4da955adc54",
+    "approved_at": "2026-10-30T11:58:58Z"
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "PowerPoint library folder and add-files in Electron",
+      "goal": "",
+      "depends_on": [],
+      "files": [
+        "src/electron/utils/files.ts",
+        "src/electron/output/ppt/pptLibrary.ts",
+        "src/electron/output/ppt/pptLibrary.test.ts",
+        "src/types/IPC/Main.ts",
+        "src/electron/IPC/responsesMain.ts"
+      ],
+      "acceptance": [
+        "PPTLIB-03"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793361423014606736-cdfd"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T2",
+      "title": "PowerPoints drawer tab with default library and user folders",
+      "goal": "",
+      "depends_on": [
+        "T1"
+      ],
+      "files": [
+        "src/frontend/values/tabs.ts",
+        "src/types/Tabs.ts",
+        "src/types/Main.ts",
+        "src/types/Save.ts",
+        "src/frontend/stores.ts",
+        "src/frontend/utils/save.ts",
+        "src/frontend/utils/updateSettings.ts",
+        "src/electron/data/defaults.ts",
+        "src/frontend/components/helpers/historyHelpers.ts",
+        "src/frontend/components/helpers/dropActions.ts",
+        "src/frontend/components/drawer/Navigation.svelte",
+        "src/frontend/components/drawer/navigation/PowerPointTabs.svelte",
+        "src/frontend/components/context/contextMenus.ts",
+        "src/frontend/components/context/menuClick.ts",
+        "public/lang/en.json"
+      ],
+      "acceptance": [
+        "PPTLIB-01",
+        "PPTLIB-02",
+        "PPTLIB-04"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793361662154958102-561c"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T3",
+      "title": "PowerPoint list: add, open, drag and double-click into project",
+      "goal": "",
+      "depends_on": [
+        "T2"
+      ],
+      "files": [
+        "src/frontend/components/drawer/Content.svelte",
+        "src/frontend/components/drawer/powerpoint/PowerPoints.svelte",
+        "src/frontend/components/helpers/drop.ts",
+        "src/frontend/components/helpers/dropActions.ts",
+        "src/frontend/components/show/ppt/pptLibrary.ts",
+        "public/lang/en.json"
+      ],
+      "acceptance": [
+        "PPTLIB-03",
+        "PPTLIB-05",
+        "PPTLIB-06"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793361911247836078-7a71"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T4",
+      "title": "Trim the Import menu and import PowerPoint into the library and project",
+      "goal": "",
+      "depends_on": [
+        "T3"
+      ],
+      "files": [
+        "src/frontend/components/main/popups/Import.svelte",
+        "src/frontend/components/show/ppt/pptLibrary.ts",
+        "public/lang/en.json"
+      ],
+      "acceptance": [
+        "PPTLIB-07",
+        "PPTLIB-08"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793362023680926186-a940"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T5",
+      "title": "Folder context menu and system folder picker for the PowerPoints tab",
+      "goal": "",
+      "depends_on": [
+        "T2"
+      ],
+      "files": [
+        "src/frontend/components/drawer/MaterialDrawerTab.svelte",
+        "src/frontend/IPC/responsesMain.ts"
+      ],
+      "acceptance": [
+        "PPTLIB-02",
+        "PPTLIB-04"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793361732986065811-4446"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T6",
+      "title": "Selection id for PowerPoint files",
+      "goal": "",
+      "depends_on": [
+        "T5"
+      ],
+      "files": [
+        "src/types/Main.ts"
+      ],
+      "acceptance": [
+        "PPTLIB-06"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793361794738485528-9a20"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T7",
+      "title": "Test copying presentations into the library",
+      "goal": "",
+      "depends_on": [
+        "T4"
+      ],
+      "files": [
+        "src/electron/output/ppt/pptLibrary.test.ts"
+      ],
+      "acceptance": [
+        "PPTLIB-03"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793362300548702669-7bd3"
+      ],
+      "note": ""
+    },
+    {
+      "id": "T8",
+      "title": "Test the picker extensions and library folder id",
+      "goal": "",
+      "depends_on": [
+        "T7"
+      ],
+      "files": [
+        "src/electron/output/ppt/pptLibrary.test.ts"
+      ],
+      "acceptance": [
+        "PPTLIB-02",
+        "PPTLIB-03"
+      ],
+      "capabilities": [],
+      "gate": "quick",
+      "status": "completed",
+      "attempts": 0,
+      "agent": null,
+      "evidence": [
+        "g01793362432627830039-2edb"
+      ],
+      "note": ""
+    }
+  ]
+}
