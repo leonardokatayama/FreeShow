@@ -67,10 +67,14 @@ function Get-App {
 }
 
 function Find-Presentation($fullPath) {
+    # files in a OneDrive-synced folder (e.g. Documents) report a web address as FullName, so match those by file name
+    $name = [IO.Path]::GetFileName($fullPath)
+    $synced = $null
     foreach ($p in (Get-App).Presentations) {
         if ($p.FullName -eq $fullPath) { return $p }
+        if (-not $synced -and $p.FullName -match '^https?://' -and $p.Name -eq $name) { $synced = $p }
     }
-    return $null
+    return $synced
 }
 
 function Get-View {
