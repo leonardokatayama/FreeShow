@@ -6,13 +6,13 @@
     import { activeShow, os, outLocked, outputs, presentationApps, presentationData, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
-    import { encodeFilePath, getFileName, removeExtension } from "../../helpers/media"
-    import { getActiveOutputs, getOutputContent, setOutput } from "../../helpers/output"
+    import { encodeFilePath } from "../../helpers/media"
+    import { getOutputContent } from "../../helpers/output"
     import T from "../../helpers/T.svelte"
     import Button from "../../inputs/Button.svelte"
     import Dropdown from "../../inputs/Dropdown.svelte"
-    import { clearBackground, clearSlide } from "../../output/clear"
     import Center from "../../system/Center.svelte"
+    import { gotoPresentationSlide, startPresentation } from "./presentationControl"
     import ScreenCapture from "./ScreenCapture.svelte"
 
     export let show: ShowRef
@@ -30,10 +30,7 @@
 
         reset()
         opening = true
-
-        const outputId = getActiveOutputs($outputs, false, true, true)[0]
-        sendMain(Main.START_SLIDESHOW, { path: show.id, program: $special.presentationApp || "PowerPoint", outputId })
-        clearSlide()
+        startPresentation(show.id, show.name)
 
         setTimeout(() => (opening ? (retry = true) : ""), 8000)
     }
@@ -50,18 +47,8 @@
 
     $: outSlide = getOutputContent("", $outputs)
 
-    $: if (opening && $presentationData?.id === show.id && !$presentationData?.ended) start()
-    function start() {
-        let name = show.name || removeExtension(getFileName(show.id))
-        setOutput("slide", { type: "ppt", id: show.id, name, page: $presentationData.stat?.position - 1, pages: $presentationData.stat?.slides })
-
-        // update current out slide manually
-        let outputId = getActiveOutputs($outputs, false, true, true)[0]
-        outSlide = $outputs[outputId]?.out?.slide
-
-        clearBackground()
-        reset()
-    }
+    // the output is set by receivePresentationState once the slide show runs
+    $: if (opening && outSlide?.id === show.id) reset()
 
     onDestroy(() => {
         if ($activeShow?.type !== "ppt") sendMain(Main.PRESENTATION_CONTROL, { action: "stop" })
@@ -84,10 +71,7 @@
     $: thumbnails = ($presentationData?.thumbnails || []) as string[]
     $: slideCount = $presentationData?.stat?.slides || 0
 
-    function gotoSlide(index: number) {
-        if ($outLocked) return
-        sendMain(Main.PRESENTATION_CONTROL, { action: "goto", index })
-    }
+    const gotoSlide = gotoPresentationSlide
 
     // keep the current slide in view
     let grid: HTMLElement | undefined

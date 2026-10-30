@@ -92,6 +92,7 @@ import {
     videoSeekTo
 } from "./apiHelper"
 import { oscToAPI } from "./apiOSC"
+import { gotoPresentationSlide, startPresentation } from "../show/ppt/presentationControl"
 import { emitData } from "./emitters"
 import { sendRestCommandSync } from "./rest"
 
@@ -265,6 +266,8 @@ export const API_ACTIONS = {
     start_camera: (data: API_camera) => startCamera(data),
     start_screen: (data: API_screen) => startScreen(data),
     play_media: (data: API_media) => playMedia(data),
+    start_presentation: (data: API_media) => startPresentation(data.path),
+    presentation_goto: (data: API_index) => gotoPresentationSlide(data.index),
     toggle_playing_media: () => togglePlayingMedia(null, false, true),
     toggle_media_loop: () => toggleMediaLoop(),
     toggle_media_mute: () => toggleMediaMute(),
