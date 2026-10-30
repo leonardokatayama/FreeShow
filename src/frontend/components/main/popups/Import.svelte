@@ -65,7 +65,7 @@
         { name: "info.slides", description: "Imperfect formatting.", icon: "txt", click: pptText },
         { name: "PDF", description: `Requires LibreOffice${$os.platform === "linux" ? "" : " or PowerPoint"} installed.`, icon: "pdf", click: convertToPdf },
         { name: "PDF (Online)", description: "Requires network connection, and manual steps.", icon: "pdf", click: onlineConvert },
-        { name: "Controller (Deprecated)", description: "Requires PowerPoint/Keynote installed. Useful for live streams, but buggy.", icon: "powerkey", click: pptController }
+        { name: $os.platform === "win32" ? "PowerPoint" : "Controller (Deprecated)", description: $os.platform === "win32" ? "Requires PowerPoint installed. Keeps animations, transitions and videos." : "Requires PowerPoint/Keynote installed. Useful for live streams, but buggy.", icon: "powerkey", click: pptController }
     ]
 
     function pptText() {

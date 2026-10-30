@@ -6,7 +6,7 @@
     import { activeShow, os, outLocked, outputs, presentationApps, presentationData, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
-    import { getFileName, removeExtension } from "../../helpers/media"
+    import { encodeFilePath, getFileName, removeExtension } from "../../helpers/media"
     import { getActiveOutputs, getOutputContent, setOutput } from "../../helpers/output"
     import T from "../../helpers/T.svelte"
     import Button from "../../inputs/Button.svelte"
@@ -31,7 +31,8 @@
         reset()
         opening = true
 
-        sendMain(Main.START_SLIDESHOW, { path: show.id, program: $special.presentationApp || "PowerPoint" })
+        const outputId = getActiveOutputs($outputs, false, true, true)[0]
+        sendMain(Main.START_SLIDESHOW, { path: show.id, program: $special.presentationApp || "PowerPoint", outputId })
         clearSlide()
 
         setTimeout(() => (opening ? (retry = true) : ""), 8000)
@@ -49,7 +50,7 @@
 
     $: outSlide = getOutputContent("", $outputs)
 
-    $: if (opening && $presentationData?.id === show.id) start()
+    $: if (opening && $presentationData?.id === show.id && !$presentationData?.ended) start()
     function start() {
         let name = show.name || removeExtension(getFileName(show.id))
         setOutput("slide", { type: "ppt", id: show.id, name, page: $presentationData.stat?.position - 1, pages: $presentationData.stat?.slides })
@@ -76,6 +77,21 @@
         presentationData.set({})
         newPresentation()
     }
+
+    // native (Windows): PowerPoint runs hidden, its slide show covers the output
+    $: native = $presentationData?.id === show.id && !!$presentationData?.native
+    $: currentPosition = $presentationData?.stat?.position || 0
+    $: thumbnails = ($presentationData?.thumbnails || []) as string[]
+    $: slideCount = $presentationData?.stat?.slides || 0
+
+    function gotoSlide(index: number) {
+        if ($outLocked) return
+        sendMain(Main.PRESENTATION_CONTROL, { action: "goto", index })
+    }
+
+    // keep the current slide in view
+    let grid: HTMLElement | undefined
+    $: if (grid && currentPosition) grid.querySelector(`[data-index="${currentPosition}"]`)?.scrollIntoView({ block: "nearest" })
 </script>
 
 <svelte:window on:keydown={keydown} />
@@ -89,6 +105,32 @@
         <br />
         <T id="presentation_control.unsupported_tip" />
     </Center>
+{:else if outSlide?.id === show.id && native}
+    <div class="grid" bind:this={grid}>
+        {#each Array(slideCount) as _, i}
+            {@const index = i + 1}
+            <button class="thumbnail" class:active={index === currentPosition} data-index={index} on:click={() => gotoSlide(index)} title={$presentationData.info?.titles?.[i] || ""}>
+                {#if thumbnails[i]}
+                    <img src={encodeFilePath(thumbnails[i])} alt="" draggable="false" />
+                {/if}
+                <span class="number">{index}</span>
+            </button>
+        {/each}
+    </div>
+
+    <div class="info">
+        <Button on:click={restartPresentation} title={translateText("presentation_control.restart")}>
+            <Icon id="refresh" />
+        </Button>
+        <p style="white-space: normal;overflow: auto;padding: 3px 8px;">
+            <b>{currentPosition}/{slideCount}</b>
+            {#if $presentationData.stat?.clickCount}
+                <span style="opacity: 0.6;padding-inline-start: 6px;">({$presentationData.stat.clickIndex}/{$presentationData.stat.clickCount})</span>
+            {/if}
+            <b style="padding-inline-start: 10px;">{$presentationData.info?.titles?.[currentPosition - 1] || ""}</b>
+            <span style="padding-inline-start: 10px;">{$presentationData.info?.notes?.[currentPosition - 1] || ""}</span>
+        </p>
+    </div>
 {:else if outSlide?.id === show.id}
     <div class="fill">
         <ScreenCapture path={show.id} />
@@ -143,6 +185,53 @@
 
         display: flex;
         /* align-items: center; */
+    }
+
+    .grid {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        align-content: start;
+        gap: 10px;
+    }
+
+    .thumbnail {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        padding: 0;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        overflow: hidden;
+
+        background-color: var(--primary-darkest);
+        cursor: pointer;
+    }
+    .thumbnail:hover {
+        filter: brightness(1.15);
+    }
+    .thumbnail.active {
+        border-color: var(--secondary);
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .thumbnail .number {
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        padding: 0 6px;
+        border-radius: 3px;
+
+        font-size: 0.8em;
+        background-color: rgb(0 0 0 / 0.6);
+        color: white;
     }
 
     .info {

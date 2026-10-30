@@ -49,7 +49,7 @@ export interface ToMainSendPayloads {
     [ToMain.SPELL_CHECK]: { misspelled: string; suggestions: string[] }
     [ToMain.BACKUP]: { finished: boolean; path: string }
     [ToMain.RECENTLY_ADDED_FILES]: { paths: string[] }
-    [ToMain.PRESENTATION_STATE]: { id: string; stat: any; info: any }
+    [ToMain.PRESENTATION_STATE]: { id: string; stat: any; info: any; native?: boolean; ended?: boolean; thumbnails?: string[] }
     [ToMain.CAPTURE_CANVAS]: { input: string; output: string; size: any; extension: string; config: any; id: string }
     [ToMain.REPLACE_MEDIA_PATHS]: any[]
     [ToMain.LESSONS_DONE]: { showId: string; status: { finished: number; failed: number } }

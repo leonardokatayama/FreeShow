@@ -8,7 +8,7 @@
     import type { OutData } from "../../../types/Output"
     import type { Styles } from "../../../types/Settings"
     import type { AnimationData, Item, LayoutRef, OutBackground, OutScene, OutSlide, Slide, SlideData, Template, Overlays as TOverlays, Transition } from "../../../types/Show"
-    import { allOutputs, colorbars, currentWindow, drawSettings, drawTool, effects, media, outputs, overlays, showsCache, styles, templates, transitionData } from "../../stores"
+    import { allOutputs, colorbars, currentWindow, drawSettings, drawTool, effects, media, outputs, overlays, presentationData, showsCache, styles, templates, transitionData } from "../../stores"
     import { wait } from "../../utils/common"
     import { custom } from "../../utils/transitions"
     import Draw from "../draw/Draw.svelte"
@@ -366,6 +366,7 @@
     // CLEARING
     $: if (slide !== undefined || currentStyle || layers || sceneHideLayers !== undefined) updateSlide()
     let actualSlide: OutSlide | null = null
+    $: pptThumbnail = actualSlide?.type === "ppt" && $presentationData?.native && $presentationData.id === actualSlide.id ? $presentationData.thumbnails?.[($presentationData.stat?.position || 1) - 1] || "" : ""
     let actualSlideData: SlideData | null = null
     let actualCurrentSlide: Slide | null = null
     let actualCurrentLineId: string | undefined = undefined
@@ -444,6 +445,9 @@
         <span style="zoom: {1 / ratio};">
             {#if actualSlide?.screen?.id}
                 <Window id={actualSlide?.screen?.id} class="media" style="width: 100%;height: 100%;" />
+            {:else if pptThumbnail}
+                <!-- native PowerPoint (Windows): slide show covers the output, show current slide in preview -->
+                <Image path={pptThumbnail} />
             {/if}
         </span>
     {:else if actualSlide && actualSlide?.type !== "pdf"}

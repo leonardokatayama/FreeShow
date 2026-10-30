@@ -1,10 +1,11 @@
 import os from "os"
 import Slideshow from "slideshow"
-import { getMainWindow, isProd } from "../.."
+import { getMainWindow, isProd, isWindows } from "../.."
 import { ToMain } from "../../../types/IPC/ToMain"
 import { sendToMain } from "../../IPC/main"
 import { OutputHelper } from "../OutputHelper"
 import { OutputValues } from "../helpers/OutputValues"
+import { isWindowsSlideshowActive, startWindowsSlideshow, windowsPresentationControl } from "./powerpointWindows"
 
 // from "slideshow" - "connector.js"
 const connectors = {
@@ -19,18 +20,40 @@ export function getPresentationApplications() {
 
 let alwaysOnTopDisabled: string[] = []
 let starting = false
-export async function startSlideshow(data: { path: string; program: string }) {
+export async function startSlideshow(data: { path: string; program: string; outputId?: string }) {
     if (closing || starting) return
     starting = true
 
-    await initPresentation(data.path, data.program.toLowerCase().replaceAll(" ", ""))
+    // Windows: native PowerPoint control (hidden app, slide show covers the output)
+    if (isWindows) {
+        // outputs have to be below the PowerPoint slide show window
+        disableAlwaysOnTop()
+        const started = await startWindowsSlideshow(data.path, data.outputId, restoreAlwaysOnTop)
+        if (!started) restoreAlwaysOnTop()
+        starting = false
+        return
+    }
 
+    await initPresentation(data.path, data.program.toLowerCase().replaceAll(" ", ""))
+    disableAlwaysOnTop()
+}
+
+function disableAlwaysOnTop() {
     if (alwaysOnTopDisabled.length) return
     OutputHelper.getAllOutputs().forEach((output) => {
         if (output.window.isAlwaysOnTop()) {
             OutputValues.updateValue({ id: output.id, key: "alwaysOnTop", value: false })
             alwaysOnTopDisabled.push(output.id)
         }
+    })
+}
+
+function restoreAlwaysOnTop() {
+    setTimeout(() => {
+        alwaysOnTopDisabled.forEach((id) => {
+            OutputValues.updateValue({ id, key: "alwaysOnTop", value: true })
+        })
+        alwaysOnTopDisabled = []
     })
 }
 
@@ -65,12 +88,7 @@ function stopSlideshow() {
         closing = false
         openedPresentation = ""
 
-        setTimeout(() => {
-            alwaysOnTopDisabled.forEach((id) => {
-                OutputValues.updateValue({ id, key: "alwaysOnTop", value: true })
-            })
-            alwaysOnTopDisabled = []
-        })
+        restoreAlwaysOnTop()
     }
 }
 
@@ -204,7 +222,12 @@ const presentationActions = {
     stop: () => stopSlideshow()
 }
 
-export async function presentationControl(data: { action: string }) {
+export async function presentationControl(data: { action: string; index?: number }) {
+    if (isWindows) {
+        if (isWindowsSlideshowActive()) await windowsPresentationControl(data.action, data.index)
+        return
+    }
+
     if (!currentSlideshow) return
 
     try {
