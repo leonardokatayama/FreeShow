@@ -3,13 +3,17 @@ import os from "os"
 import path from "path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const files = vi.hoisted(() => ({ library: "", picked: [] as string[] }))
+const files = vi.hoisted(() => ({ library: "", picked: [] as string[], folderIds: [] as string[], filters: [] as { name: string; extensions: string[] }[] }))
 vi.mock("../../utils/files", () => ({
-    getDataFolderPath: () => {
+    getDataFolderPath: (id: string) => {
+        files.folderIds.push(id)
         fs.mkdirSync(files.library, { recursive: true })
         return files.library
     },
-    selectFilesDialog: async () => files.picked
+    selectFilesDialog: async (_title: string, filter: { name: string; extensions: string[] }) => {
+        files.filters.push(filter)
+        return files.picked
+    }
 }))
 
 const { addPresentationsToLibrary, getFreeFileName } = await import("./pptLibrary")
@@ -45,6 +49,8 @@ describe("addPresentationsToLibrary", () => {
         fs.mkdirSync(source)
         files.library = path.join(root, "PowerPoint")
         files.picked = []
+        files.folderIds = []
+        files.filters = []
     })
     afterEach(() => fs.rmSync(root, { recursive: true, force: true }))
 
@@ -64,6 +70,20 @@ describe("addPresentationsToLibrary", () => {
         expect(fs.readFileSync(added[0], "utf8")).toBe("deck")
         // the original stays where it was
         expect(fs.existsSync(original)).toBe(true)
+    })
+
+    it("only offers PowerPoint and Keynote files in the picker", async () => {
+        await addPresentationsToLibrary()
+
+        expect(files.filters).toEqual([{ name: "PowerPoint", extensions: ["ppt", "pptx", "key"] }])
+    })
+
+    it("copies into the FreeShow 'powerpoint' data folder", async () => {
+        pick("Culto.pptx")
+
+        await addPresentationsToLibrary()
+
+        expect(files.folderIds).toEqual(["powerpoint"])
     })
 
     it("adds (2) to a copy whose name is already in the library", async () => {
