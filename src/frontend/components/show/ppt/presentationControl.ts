@@ -1,8 +1,10 @@
 import { get } from "svelte/store"
 import { Main } from "../../../../types/IPC/Main"
+import { REMOTE } from "../../../../types/Channels"
 import type { ToMain, ToMainSendPayloads } from "../../../../types/IPC/ToMain"
 import { sendMain } from "../../../IPC/main"
 import { outLocked, outputs, presentationData, special } from "../../../stores"
+import { sendData } from "../../../utils/sendData"
 import { getFileName, removeExtension } from "../../helpers/media"
 import { getActiveOutputs, setOutput } from "../../helpers/output"
 import { clearBackground, clearSlide } from "../../output/clear"
@@ -27,6 +29,7 @@ export function gotoPresentationSlide(index: number) {
 
 export function receivePresentationState(data: ToMainSendPayloads[ToMain.PRESENTATION_STATE]) {
     presentationData.set(data)
+    sendData(REMOTE, { channel: "OUT_DATA" })
 
     const isOutputted = get(outputs)[getActiveOutputs()[0]]?.out?.slide?.id === data.id
     // native PowerPoint slide show ended (e.g. Esc pressed): clear it from the outputs

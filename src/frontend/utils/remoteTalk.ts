@@ -13,7 +13,7 @@ import { updateOut } from "../components/helpers/showActions"
 import { _show } from "../components/helpers/shows"
 import { clearAll } from "../components/output/clear"
 import { REMOTE } from "./../../types/Channels"
-import { actions, actionTags, activePage, activeProject, activeShow, activeTimers, audioChannelsData, audioRouting, categories, connections, dictionary, folders, language, openedFolders, outLocked, outputs, overlayCategories, overlays, playerVideos, projects, runningActions, scriptures, serverData, shows, showsCache, sortedShowsList, styles, templateCategories, templates, theme, themes, timers, variables, variableTags } from "./../stores"
+import { actions, actionTags, activePage, activeProject, activeShow, activeTimers, audioChannelsData, audioRouting, categories, connections, dictionary, folders, language, openedFolders, outLocked, outputs, overlayCategories, overlays, playerVideos, presentationData, projects, runningActions, scriptures, serverData, shows, showsCache, sortedShowsList, styles, templateCategories, templates, theme, themes, timers, variables, variableTags } from "./../stores"
 import { lastClickTime } from "./common"
 import { translateText } from "./language"
 import { send } from "./request"
@@ -170,7 +170,10 @@ export const receiveREMOTE: any = {
             if (playerName) out.background.name = playerName
         }
 
-        msg.data = out
+        // PowerPoint: slide position, animation step, notes and thumbnails come from the presentation app
+        const presentation = get(presentationData)
+        const isPresentation = out.slide?.type === "ppt" && presentation?.id === out.slide.id
+        msg.data = isPresentation ? { ...out, presentation: { stat: presentation.stat, info: presentation.info, thumbnails: presentation.thumbnails } } : out
 
         return msg
     },
