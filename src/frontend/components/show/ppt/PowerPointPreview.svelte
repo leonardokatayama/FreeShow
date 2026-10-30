@@ -41,10 +41,10 @@
     function keydown(e: KeyboardEvent) {
         if ($outLocked || !$presentationApps?.length) return
 
-        if (e.key === " ") {
+        // advancing is handled by the global shortcuts (OutputHelper), this only starts the slide show
+        if (e.key === " " && outSlide?.id !== show.id && !opening) {
             e.preventDefault()
-            if (outSlide?.id === show.id) sendMain(Main.PRESENTATION_CONTROL, { action: "next" })
-            else if (!opening) newPresentation()
+            newPresentation()
         }
     }
 

@@ -5,13 +5,14 @@ import type { ProjectShowRef, ShowRef } from "../../../types/Projects"
 import type { LayoutRef, OutSlide, Slide } from "../../../types/Show"
 import { AudioPlayer } from "../../audio/audioPlayer"
 import { sendMain } from "../../IPC/main"
-import { activeFocus, activeProject, activeShow, focusMode, outLocked, outputs, outputSlideCache, projects, showsCache, special } from "../../stores"
+import { activeFocus, activeProject, activeShow, focusMode, outLocked, outputs, outputSlideCache, presentationData, projects, showsCache, special } from "../../stores"
 import { playFolder, togglePlayingMedia } from "../../utils/shortcuts"
 import { openProjectItem } from "../show/project"
 import { clone } from "./array"
 import { getAllActiveOutputIds, isOutputBound, setOutput } from "./output"
 import { checkActionTrigger, getFewestOutputLines, getItemWithMostLines, playPdf, updateOut } from "./showActions"
 import { _show } from "./shows"
+import { isPresentationAtEdge } from "../show/ppt/presentationState"
 import { runActionId } from "../actions/actions"
 
 type Options = { isSpace: boolean; slideLayers: boolean; playNext: boolean }
@@ -300,6 +301,9 @@ export class OutputHelper {
             return next ? outSlide.page + 1 >= outSlide.pages : outSlide.page <= 0
         }
 
+        // PowerPoint steps through its own slides and animations until it reaches the edge
+        if (item.type === "ppt" && outSlide?.id === item.id) return isPresentationAtEdge(get(presentationData), item.id, next)
+
         // if (item.type === "folder") return false
 
         return outSlide?.id === item.id
@@ -549,9 +553,10 @@ export class OutputHelper {
             return
         }
 
-        // PPT (deprecated)
+        // PowerPoint
         if (item.type === "ppt") {
-            sendMain(Main.PRESENTATION_CONTROL, { action: next ? "next" : "previous" }) // e?.key === "PageDown" ? "last" :
+            // only control a running slide show (starting it is done from the PowerPoint preview)
+            if (out.slide?.id === item.id) sendMain(Main.PRESENTATION_CONTROL, { action: next ? "next" : "previous" })
             return
         }
     }
