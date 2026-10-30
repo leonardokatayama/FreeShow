@@ -6,7 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { buildEncoderCommand, type EncoderId } from "./encoderProfiles"
 
 // only encoder resolution is faked; the ffmpeg processes are real
-const mocked = vi.hoisted(() => ({ encoder: "x264" }))
+const mocked = vi.hoisted(() => ({ encoder: "x264" as EncoderId }))
 vi.mock("./encoderDetection", () => ({
     resolveEncoder: async () => mocked.encoder,
     getRtmpEncoderSetting: () => mocked.encoder
@@ -14,8 +14,7 @@ vi.mock("./encoderDetection", () => ({
 vi.mock("./ffmpegManager", () => ({ resolveFfmpegPath: async () => "ffmpeg" }))
 
 const { RtmpStreamer, setRtmpStatusListener, setRtmpNoticeListener, setRtmpResolvers } = await import("./RtmpStreamer")
-// RtmpStreamer resolves through these, so the encoder must follow `mocked` for the fallback test to request vaapi
-setRtmpResolvers({ resolveFfmpegPath: async () => "ffmpeg", resolveEncoder: async () => mocked.encoder as EncoderId })
+setRtmpResolvers({ resolveFfmpegPath: async () => "ffmpeg", resolveEncoder: async (enc): Promise<EncoderId> => (enc as EncoderId) || mocked.encoder })
 
 function hasFfmpeg(): boolean {
     try {

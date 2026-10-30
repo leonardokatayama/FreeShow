@@ -321,14 +321,14 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
                 // send to frontend
                 const localData = localStore.store
                 sendMain(Main[id], localData)
-            } else if (localFileModified) {
-                // Local wins: carry real edit time into ledger for other devices.
+            } else {
+                // Local wins: carry real edit time into ledger for other devices (if tracked),
+                // and mark local as merged in so changes are uploaded to cloud.
                 localMergedIn = true
-                if (!CHANGES.fileModified) CHANGES.fileModified = {}
-                CHANGES.fileModified[id] = Math.max(CHANGES.fileModified[id] || 0, localFileModified)
-            } else if (JSON.stringify(cloudFileData) !== JSON.stringify(localStore.store)) {
-                // Local wins by file mtime (untracked): upload only if the content actually differs.
-                localMergedIn = true
+                if (localFileModified) {
+                    if (!CHANGES.fileModified) CHANGES.fileModified = {}
+                    CHANGES.fileModified[id] = Math.max(CHANGES.fileModified[id] || 0, localFileModified)
+                }
             }
             return
         }
