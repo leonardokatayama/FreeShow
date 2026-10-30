@@ -16,7 +16,7 @@
     }
 
     // Player = online media (e.g. YouTube/Vimeo/etc). Treat like other media entries.
-    const MEDIA_TYPES = new Set(["image", "video", "overlay", "audio", "pdf", "player"])
+    const MEDIA_TYPES = new Set(["image", "video", "overlay", "audio", "pdf", "ppt", "player"])
     const THUMBNAIL_TYPES = new Set(["image", "video", "player"])
 
     let editProject = false
@@ -167,7 +167,7 @@
                                                 border
                                                 class="section-item-button"
                                             >
-                                                <Icon id={showType === "audio" ? "music" : showType === "overlay" ? "overlays" : showType} right />
+                                                <Icon id={showType === "audio" ? "music" : showType === "overlay" ? "overlays" : showType} box={showType === "ppt" ? 50 : 24} right />
                                                 <span style="display: flex;align-items: center;flex: 1;overflow: hidden;min-width: 0;">
                                                     <p style="margin: 0;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">{show.name || (showId ? getFileName(removeExtension(showId)) : "")}</p>
                                                 </span>

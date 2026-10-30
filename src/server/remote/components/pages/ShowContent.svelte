@@ -4,6 +4,7 @@
     import OverlayPreview from "../show/OverlayPreview.svelte"
     import Media from "./Media.svelte"
     import PdfPreview from "./PdfPreview.svelte"
+    import PptPreview from "./PptPreview.svelte"
 
     export let tablet: boolean = false
 
@@ -18,6 +19,8 @@
     <OverlayPreview show={activeShow} />
 {:else if activeShow.type === "pdf"}
     <PdfPreview active={activeShow} {tablet} />
+{:else if activeShow.type === "ppt"}
+    <PptPreview active={activeShow} {tablet} />
 {:else if activeShow.type === "player"}
     <!-- Online media / player content -->
     <Media />
