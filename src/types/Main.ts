@@ -101,6 +101,7 @@ export type SelectIds =
     | "stage"
     | "media"
     | "audio"
+    | "powerpoint"
     | "audio_effect"
     | "metronome"
     | "overlay"
