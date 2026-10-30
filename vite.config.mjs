@@ -47,7 +47,7 @@ export default defineConfig({
               }
           },
     server: {
-        port: 3000,
+        port: 3300,
         host: "127.0.0.1",
         strictPort: true,
         middlewareMode: false

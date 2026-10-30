@@ -270,7 +270,7 @@ export async function loadWindowContent(window: BrowserWindow, type: null | "out
     else {
         // load development environment
         if (mainOutput) openDevTools(window)
-        window.loadURL("http://localhost:3000").catch(loadingFailed)
+        window.loadURL("http://localhost:3300").catch(loadingFailed)
     }
 
     window.webContents.ipc.on(STARTUP, (_event, msg) => {

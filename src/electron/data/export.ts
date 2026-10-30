@@ -170,7 +170,7 @@ export function createPDFWindow(data: any) {
 
     // load path
     if (isProd) exportWindow.loadFile("public/index.html")
-    else exportWindow.loadURL("http://localhost:3000")
+    else exportWindow.loadURL("http://localhost:3300")
 
     exportWindow.webContents.once("did-finish-load", windowLoaded)
     function windowLoaded() {

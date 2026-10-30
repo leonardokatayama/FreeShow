@@ -7,8 +7,8 @@ console.log("Starting FreeShow development environment...")
 
 // Kill any process on port 3000
 try {
-    execSync("npx kill-port 3000", { stdio: "pipe" })
-    console.log("Cleared port 3000")
+    execSync("npx kill-port 3300", { stdio: "pipe" })
+    console.log("Cleared port 3300")
 } catch (e) {
     // Port might not be in use, that's okay
 }
