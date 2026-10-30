@@ -47,9 +47,30 @@ $script:app = $null
 $script:pres = $null
 $script:startedApp = $false
 $script:openedByUs = $false
+# full path -> presentation opened in the background, ready to start
+$script:preloaded = @{}
 
 function Send($obj) {
     $stdout.WriteLine((ConvertTo-Json -InputObject $obj -Compress -Depth 8))
+}
+
+# PowerPoint stays open for the life of this bridge; quit on exit only if the bridge started it
+function Get-App {
+    if ($script:app) { return $script:app }
+    try {
+        $script:app = [Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application')
+    } catch {
+        $script:app = New-Object -ComObject PowerPoint.Application
+        $script:startedApp = $true
+    }
+    return $script:app
+}
+
+function Find-Presentation($fullPath) {
+    foreach ($p in (Get-App).Presentations) {
+        if ($p.FullName -eq $fullPath) { return $p }
+    }
+    return $null
 }
 
 function Get-View {
@@ -114,42 +135,26 @@ function Set-ShowWindow($bounds) {
     }
 }
 
+# ends the slide show; a presentation that was preloaded stays open for the next start
 function Close-Presentation {
     if ($script:pres) {
         try { $script:pres.SlideShowWindow.View.Exit() } catch {}
-        if ($script:openedByUs) { try { $script:pres.Close() } catch {} }
-        try { [Runtime.InteropServices.Marshal]::ReleaseComObject($script:pres) | Out-Null } catch {}
-    }
-    if ($script:app) {
-        if ($script:startedApp) {
-            try { if ($script:app.Presentations.Count -eq 0) { $script:app.Quit() } } catch {}
-        }
-        try { [Runtime.InteropServices.Marshal]::ReleaseComObject($script:app) | Out-Null } catch {}
+        $isPreloaded = $false
+        try { $isPreloaded = $script:preloaded.ContainsKey([string]$script:pres.FullName) } catch {}
+        if ($script:openedByUs -and -not $isPreloaded) { try { $script:pres.Close() } catch {} }
     }
     $script:pres = $null
-    $script:app = $null
-    $script:startedApp = $false
     $script:openedByUs = $false
 }
 
 function Open-Presentation($data) {
     Close-Presentation
 
-    try {
-        $script:app = [Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application')
-        $script:startedApp = $false
-    } catch {
-        $script:app = New-Object -ComObject PowerPoint.Application
-        $script:startedApp = $true
-    }
-
     $fullPath = [IO.Path]::GetFullPath([string]$data.path)
-    foreach ($p in $script:app.Presentations) {
-        if ($p.FullName -eq $fullPath) { $script:pres = $p }
-    }
+    $script:pres = Find-Presentation $fullPath
     if (-not $script:pres) {
         # ReadOnly = msoTrue, Untitled = msoFalse, WithWindow = msoFalse (no editing window)
-        $script:pres = $script:app.Presentations.Open($fullPath, -1, 0, 0)
+        $script:pres = (Get-App).Presentations.Open($fullPath, -1, 0, 0)
         $script:openedByUs = $true
     }
 
@@ -164,16 +169,76 @@ function Open-Presentation($data) {
     return @{ state = (Get-State); info = (Get-Info); slideWidth = [double]$script:pres.PageSetup.SlideWidth; slideHeight = [double]$script:pres.PageSetup.SlideHeight }
 }
 
+# keep exactly these files open in the background (without windows), so starting them is instant
+function Set-Preload($paths) {
+    $wanted = @{}
+    foreach ($p in @($paths)) { if ($p) { $wanted[[IO.Path]::GetFullPath([string]$p)] = $true } }
+
+    foreach ($key in @($script:preloaded.Keys)) {
+        $p = $script:preloaded[$key]
+        # a file without a window is closed by PowerPoint when its slide show ends, and the old reference doesn't tell
+        $isOpen = [bool](Find-Presentation $key)
+        if ($isOpen -and -not $wanted.ContainsKey($key)) {
+            $isShowing = $false
+            try { $isShowing = $script:pres -and ($script:pres.FullName -eq $key) } catch {}
+            if (-not $isShowing) { try { $p.Close() } catch {} }
+        }
+        if (-not $isOpen -or -not $wanted.ContainsKey($key)) { $script:preloaded.Remove($key) }
+    }
+
+    foreach ($key in @($wanted.Keys)) {
+        if ($script:preloaded.ContainsKey($key)) { continue }
+        if (-not (Test-Path -LiteralPath $key)) { continue }
+        $open = Find-Presentation $key
+        if ($open) {
+            # open without a window = opened by this bridge (e.g. after its slide show): keep tracking it
+            # with a window = opened by the user: leave it alone
+            if ($open.Windows.Count -eq 0) { $script:preloaded[$key] = $open }
+            continue
+        }
+        $script:preloaded[$key] = (Get-App).Presentations.Open($key, -1, 0, 0)
+    }
+
+    # slide count per requested path, in the same order (0 when it could not be opened)
+    $slides = @()
+    foreach ($p in @($paths)) {
+        $count = 0
+        if ($p) { $count = Get-SlideCount ([IO.Path]::GetFullPath([string]$p)) }
+        $slides += $count
+    }
+    return @{ slides = $slides }
+}
+
+# PowerPoint rejects calls for a moment after a slide show ends, so retry briefly
+function Get-SlideCount($fullPath) {
+    for ($i = 0; $i -lt 5; $i++) {
+        try { return [int](Find-Presentation $fullPath).Slides.Count } catch { Start-Sleep -Milliseconds 200 }
+    }
+    return 0
+}
+
+function Close-All {
+    Close-Presentation
+    foreach ($p in @($script:preloaded.Values)) { try { $p.Close() } catch {} }
+    $script:preloaded = @{}
+    if ($script:app -and $script:startedApp) {
+        try { if ($script:app.Presentations.Count -eq 0) { $script:app.Quit() } } catch {}
+    }
+}
+
 function Invoke-Action($action, $data) {
     if ($action -eq 'open') { return Open-Presentation $data }
     if ($action -eq 'close') { Close-Presentation; return @{ running = $false } }
     if ($action -eq 'state') { return Get-State }
 
+    if ($action -eq 'preload') { return Set-Preload $data.paths }
+
     if ($action -eq 'thumbnail') {
-        if (-not $script:pres) { throw 'no presentation' }
-        $slide = $script:pres.Slides.Item([int]$data.index)
+        $target = Find-Presentation ([IO.Path]::GetFullPath([string]$data.file))
+        if (-not $target) { throw 'presentation is not open' }
+        $slide = $target.Slides.Item([int]$data.index)
         $width = [int]$data.width
-        $height = [int][Math]::Round($width * $script:pres.PageSetup.SlideHeight / $script:pres.PageSetup.SlideWidth)
+        $height = [int][Math]::Round($width * $target.PageSetup.SlideHeight / $target.PageSetup.SlideWidth)
         $slide.Export([string]$data.path, 'PNG', $width, $height)
         return @{ path = [string]$data.path }
     }
@@ -218,5 +283,5 @@ while ($true) {
     }
 }
 
-Close-Presentation
+Close-All
 `

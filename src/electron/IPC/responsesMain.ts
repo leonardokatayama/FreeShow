@@ -28,7 +28,7 @@ import { _store, appDataPath, config, createStores, getStore, getStoreValue, set
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
-import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
+import { getPresentationApplications, preloadPresentations, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers, updateServerData } from "../servers"
 import { detectEncoders, setRtmpEncoderSetting } from "../streaming/encoderDetection"
 import { downloadFfmpeg, resolveFfmpegPath } from "../streaming/ffmpegManager"
@@ -143,6 +143,7 @@ export const mainResponses: MainResponses = {
     [Main.SLIDESHOW_GET_APPS]: () => getPresentationApplications(),
     [Main.START_SLIDESHOW]: (data) => startSlideshow(data),
     [Main.PRESENTATION_CONTROL]: (data) => presentationControl(data),
+    [Main.PRESENTATION_PRELOAD]: (data) => preloadPresentations(data),
     // SERVERS
     [Main.START]: (data) => startServers(data),
     [Main.STOP]: () => closeServers(),

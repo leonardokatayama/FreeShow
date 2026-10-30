@@ -37,6 +37,10 @@ class PowerPointBridge {
         return this.pending.size > 0
     }
 
+    get isRunning() {
+        return !!this.process
+    }
+
     private start() {
         if (this.process) return
 
@@ -215,8 +219,63 @@ export async function stopWindowsSlideshow() {
     // a new slide show started while this one was closing: the bridge is already running it
     if (id !== session) return
 
-    bridge.stop()
     ended()
+    // keep PowerPoint open for preloaded files (the slide show closes its file), otherwise quit it
+    applyPreload()
+}
+
+// ----- PRELOAD -----
+
+let preloadPaths: string[] = []
+let preloadRun = 0
+
+// files to keep open in the background so they start instantly (setting: none / next / all)
+export function preloadWindowsPresentations(paths: string[]) {
+    preloadPaths = paths
+    // a running slide show gets it when it ends, so navigation never waits for a file to open
+    if (!currentPath) applyPreload()
+}
+
+async function applyPreload() {
+    const run = ++preloadRun
+    const paths = preloadPaths
+
+    if (!paths.length) {
+        if (!bridge.isRunning) return
+        try {
+            await bridge.request("preload", { paths: [] })
+        } catch (err) {
+            console.error("PowerPoint PRELOAD", err)
+        }
+        if (run === preloadRun && !currentPath && !preloadPaths.length) bridge.stop()
+        return
+    }
+
+    let slides: number[] = []
+    try {
+        const result = await bridge.request<{ slides: number[] }>("preload", { paths }, OPEN_TIMEOUT)
+        slides = result.slides || []
+    } catch (err) {
+        console.error("PowerPoint PRELOAD", err)
+        return
+    }
+
+    // thumbnails are cached per file version, so starting the slide show shows them at once
+    for (let i = 0; i < paths.length; i++) {
+        const folder = getThumbnailFolder(paths[i])
+        for (let index = 1; index <= (slides[i] || 0); index++) {
+            // stop if the list changed or a slide show started (it must not wait behind exports)
+            if (run !== preloadRun || currentPath) return
+
+            const thumbnailPath = path.join(folder, `${index}.png`)
+            if (fs.existsSync(thumbnailPath)) continue
+            try {
+                await bridge.request("thumbnail", { file: paths[i], index, path: thumbnailPath, width: THUMBNAIL_WIDTH }, 30000)
+            } catch (err) {
+                console.error("PowerPoint thumbnail", index, err)
+            }
+        }
+    }
 }
 
 function ended() {
@@ -286,7 +345,7 @@ async function generateThumbnails(id: number, filePath: string, slides: number) 
         const thumbnailPath = path.join(folder, `${index}.png`)
         if (!fs.existsSync(thumbnailPath)) {
             try {
-                await bridge.request("thumbnail", { index, path: thumbnailPath, width: THUMBNAIL_WIDTH }, 30000)
+                await bridge.request("thumbnail", { file: filePath, index, path: thumbnailPath, width: THUMBNAIL_WIDTH }, 30000)
             } catch (err) {
                 console.error("PowerPoint thumbnail", index, err)
                 continue

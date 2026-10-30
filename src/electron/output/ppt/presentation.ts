@@ -5,7 +5,7 @@ import { ToMain } from "../../../types/IPC/ToMain"
 import { sendToMain } from "../../IPC/main"
 import { OutputHelper } from "../OutputHelper"
 import { OutputValues } from "../helpers/OutputValues"
-import { getSlideshowOutput, isWindowsSlideshowActive, startWindowsSlideshow, windowsPresentationControl } from "./powerpointWindows"
+import { getSlideshowOutput, isWindowsSlideshowActive, preloadWindowsPresentations, startWindowsSlideshow, windowsPresentationControl } from "./powerpointWindows"
 
 // from "slideshow" - "connector.js"
 const connectors = {
@@ -232,6 +232,10 @@ const presentationActions = {
     last: () => currentSlideshow!.last(),
     // goto: (index: number) => currentSlideshow!.goto(index),
     stop: () => stopSlideshow()
+}
+
+export function preloadPresentations(data: { paths: string[] }) {
+    if (isWindows) preloadWindowsPresentations(data.paths || [])
 }
 
 export async function presentationControl(data: { action: string; index?: number }) {
