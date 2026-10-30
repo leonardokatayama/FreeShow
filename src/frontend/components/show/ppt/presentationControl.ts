@@ -16,10 +16,11 @@ let starting: { path: string; name: string } | null = null
 export function startPresentation(path: string, name = "") {
     if (!path || get(outLocked)) return
 
+    // clear first: stopping a running slide show must reach the app before the new one starts
+    clearSlide()
     starting = { path, name: name || removeExtension(getFileName(path)) }
     const outputId = getActiveOutputs(get(outputs), false, true, true)[0]
     sendMain(Main.START_SLIDESHOW, { path, program: get(special).presentationApp || "PowerPoint", outputId })
-    clearSlide()
 }
 
 export function gotoPresentationSlide(index: number) {

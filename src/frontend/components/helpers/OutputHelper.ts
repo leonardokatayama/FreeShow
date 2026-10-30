@@ -12,6 +12,7 @@ import { clone } from "./array"
 import { getAllActiveOutputIds, isOutputBound, setOutput } from "./output"
 import { checkActionTrigger, getFewestOutputLines, getItemWithMostLines, playPdf, updateOut } from "./showActions"
 import { _show } from "./shows"
+import { startPresentation } from "../show/ppt/presentationControl"
 import { isPresentationAtEdge } from "../show/ppt/presentationState"
 import { runActionId } from "../actions/actions"
 
@@ -565,7 +566,10 @@ export class OutputHelper {
             return
         }
 
-        // PowerPoint: a running slide show is stepped in play(), starting it is done from its view or the API
-        if (item.type === "ppt") return
+        // PowerPoint: a running slide show is stepped in play()
+        if (item.type === "ppt") {
+            if (out.slide?.id !== item.id) startPresentation(item.id, (item as ShowRef).name)
+            return
+        }
     }
 }

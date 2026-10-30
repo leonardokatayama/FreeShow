@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { onDestroy, onMount } from "svelte"
+    import { onMount } from "svelte"
     import { Main } from "../../../../types/IPC/Main"
     import type { ShowRef } from "../../../../types/Projects"
-    import { requestMain, sendMain } from "../../../IPC/main"
-    import { activeShow, os, outLocked, outputs, presentationApps, presentationData, special } from "../../../stores"
+    import { requestMain } from "../../../IPC/main"
+    import { os, outLocked, outputs, presentationApps, presentationData, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
     import { encodeFilePath } from "../../helpers/media"
@@ -49,10 +49,6 @@
 
     // the output is set by receivePresentationState once the slide show runs
     $: if (opening && outSlide?.id === show.id) reset()
-
-    onDestroy(() => {
-        if ($activeShow?.type !== "ppt") sendMain(Main.PRESENTATION_CONTROL, { action: "stop" })
-    })
 
     $: if (show.id) reset()
     function reset() {

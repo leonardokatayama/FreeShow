@@ -262,7 +262,8 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
                 data = wasArray ? allowedIds : allowedIds[0]
             }
 
-            if (type === "slide" && data === null && output.out?.slide?.type === "ppt") {
+            // stop a PowerPoint slide show when anything else takes over the output (or it's cleared)
+            if (type === "slide" && output.out?.slide?.type === "ppt" && data?.id !== output.out.slide.id) {
                 sendMain(Main.PRESENTATION_CONTROL, { action: "stop" })
             }
 
