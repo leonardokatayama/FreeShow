@@ -79,6 +79,13 @@ export class OutputHelper {
     }
 
     private static play(outputId: string, next: boolean, options: Options) {
+        // an outputted PowerPoint steps first, whatever is selected, until its first/last slide and animation
+        const outSlide = this.getOut(outputId).slide
+        if (outSlide?.type === "ppt" && !options.playNext && !isPresentationAtEdge(get(presentationData), outSlide.id, next)) {
+            this.controlPresentation(next)
+            return
+        }
+
         const show = this.getShow(outputId, next, options)
         if (show) {
             const newSlide = this.getSubsequent(outputId, show, next)
@@ -97,6 +104,14 @@ export class OutputHelper {
         }
 
         this.playItem(outputId, item, next, options)
+    }
+
+    // the slide show is shared by all outputs showing it, so send one step per key press
+    private static presentationControlSent = 0
+    private static controlPresentation(next: boolean) {
+        if (Date.now() - this.presentationControlSent < 50) return
+        this.presentationControlSent = Date.now()
+        sendMain(Main.PRESENTATION_CONTROL, { action: next ? "next" : "previous" })
     }
 
     // don't go to next if active is same as currently outputted video/audio
@@ -300,9 +315,6 @@ export class OutputHelper {
             if (options.playNext) return false // auto timer (might loop)
             return next ? outSlide.page + 1 >= outSlide.pages : outSlide.page <= 0
         }
-
-        // PowerPoint steps through its own slides and animations until it reaches the edge
-        if (item.type === "ppt" && outSlide?.id === item.id) return isPresentationAtEdge(get(presentationData), item.id, next)
 
         // if (item.type === "folder") return false
 
@@ -553,11 +565,7 @@ export class OutputHelper {
             return
         }
 
-        // PowerPoint
-        if (item.type === "ppt") {
-            // only control a running slide show (starting it is done from the PowerPoint preview)
-            if (out.slide?.id === item.id) sendMain(Main.PRESENTATION_CONTROL, { action: next ? "next" : "previous" })
-            return
-        }
+        // PowerPoint: a running slide show is stepped in play(), starting it is done from its view or the API
+        if (item.type === "ppt") return
     }
 }
