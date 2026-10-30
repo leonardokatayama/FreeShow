@@ -201,6 +201,11 @@ export async function stopWindowsSlideshow() {
     const id = ++session
     stopPolling()
 
+    // bring the output back before the slide show closes, so the screen never shows the desktop
+    const callback = onEndedCallback
+    onEndedCallback = null
+    callback?.()
+
     try {
         await bridge.request("close")
     } catch (err) {
@@ -311,10 +316,15 @@ function getThumbnailFolder(filePath: string) {
 
 // ----- OUTPUT -----
 
-// physical pixel bounds of the output the slide show should cover
-function getTargetBounds(outputId?: string): Bounds | null {
+// the displayed output the slide show covers
+export function getSlideshowOutput(outputId?: string) {
     const outputs = OutputHelper.getAllOutputs().filter((output) => output.window && !output.window.isDestroyed() && !output.invisible && output.window.isVisible())
-    const output = (outputId ? outputs.find((a) => a.id === outputId) : null) || outputs[0]
+    return (outputId ? outputs.find((a) => a.id === outputId) : null) || outputs[0] || null
+}
+
+// physical pixel bounds of that output
+function getTargetBounds(outputId?: string): Bounds | null {
+    const output = getSlideshowOutput(outputId)
     if (!output) return null
 
     return screen.dipToScreenRect(output.window, output.window.getBounds())

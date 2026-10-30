@@ -5,7 +5,7 @@ import { ToMain } from "../../../types/IPC/ToMain"
 import { sendToMain } from "../../IPC/main"
 import { OutputHelper } from "../OutputHelper"
 import { OutputValues } from "../helpers/OutputValues"
-import { isWindowsSlideshowActive, startWindowsSlideshow, windowsPresentationControl } from "./powerpointWindows"
+import { getSlideshowOutput, isWindowsSlideshowActive, startWindowsSlideshow, windowsPresentationControl } from "./powerpointWindows"
 
 // from "slideshow" - "connector.js"
 const connectors = {
@@ -26,10 +26,13 @@ export async function startSlideshow(data: { path: string; program: string; outp
 
     // Windows: native PowerPoint control (hidden app, slide show covers the output)
     if (isWindows) {
-        // outputs have to be below the PowerPoint slide show window
-        disableAlwaysOnTop()
-        const started = await startWindowsSlideshow(data.path, data.outputId, restoreAlwaysOnTop)
-        if (!started) restoreAlwaysOnTop()
+        const output = getSlideshowOutput(data.outputId)
+        const started = await startWindowsSlideshow(data.path, data.outputId, () => showOutputWindow(output?.id))
+        // hide the covered output once the slide show is on top of it, instead of fighting over which window is in front
+        if (started && output && !output.window.isDestroyed()) {
+            output.window.hide()
+            OutputHelper.Visibility.hiddenBySlideshow.add(output.window)
+        }
         starting = false
         return
     }
@@ -46,6 +49,15 @@ function disableAlwaysOnTop() {
             alwaysOnTopDisabled.push(output.id)
         }
     })
+}
+
+function showOutputWindow(id: string | undefined) {
+    const window = id ? OutputHelper.getOutput(id)?.window : null
+    if (!window || window.isDestroyed() || !OutputHelper.Visibility.hiddenBySlideshow.has(window)) return
+    OutputHelper.Visibility.hiddenBySlideshow.delete(window)
+
+    window.showInactive()
+    window.moveTop()
 }
 
 function restoreAlwaysOnTop() {

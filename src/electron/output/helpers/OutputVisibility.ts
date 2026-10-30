@@ -147,8 +147,13 @@ export class OutputVisibility {
         window.moveTop()
     }
 
+    // outputs hidden while a PowerPoint slide show covers them, shown again when it ends
+    static hiddenBySlideshow = new WeakSet<BrowserWindow>()
+
     static hideWindow(window: BrowserWindow, data: Output | null = null) {
         if (!window || window.isDestroyed()) return
+        // turned off by the user: stays hidden after the slide show
+        this.hiddenBySlideshow.delete(window)
 
         OutputBounds.disableWindowMoveListener()
 
