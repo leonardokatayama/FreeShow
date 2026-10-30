@@ -4,6 +4,7 @@ export const settingsTabs: SettingsTabs[] = ["general", "display_settings", "sty
 
 export const drawerTabs = {
     shows: { name: "tabs.shows", icon: "shows", title: "tabs.shows_info" },
+    powerpoint: { name: "tabs.powerpoint", icon: "display", title: "" },
     media: { name: "tabs.media", icon: "media", title: "" },
     audio: { name: "tabs.audio", icon: "audio", title: "" },
     overlays: { name: "tabs.overlays", icon: "overlays", title: "" },
@@ -12,9 +13,7 @@ export const drawerTabs = {
     scripture: { name: "tabs.scripture", icon: "scripture", title: "" },
     calendar: { name: "tabs.calendar", icon: "calendar", title: "" },
 
-    functions: { name: "tabs.functions", icon: "functions", title: "" },
-
-    powerpoint: { name: "tabs.powerpoint", icon: "display", title: "" }
+    functions: { name: "tabs.functions", icon: "functions", title: "" }
 }
 
 // export const drawerTabs = {
