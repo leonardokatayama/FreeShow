@@ -2,14 +2,13 @@
     import { Main } from "../../../../types/IPC/Main"
     import { importFromClipboard } from "../../../converters/importHelpers"
     import { sendMain } from "../../../IPC/main"
-    import { activePopup, alertMessage, os, popupData } from "../../../stores"
+    import { activePopup, alertMessage, popupData } from "../../../stores"
     import { translateText } from "../../../utils/language"
-    import { presentationExtensions } from "../../../values/extensions"
     import Icon from "../../helpers/Icon.svelte"
     import HRule from "../../input/HRule.svelte"
     import InputRow from "../../input/InputRow.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
-    import Tip from "../Tip.svelte"
+    import { importPresentationsToProject } from "../../show/ppt/pptLibrary"
 
     let mode = $popupData.mode
     popupData.set({})
@@ -30,58 +29,17 @@
     const text_formats: { name: string; extensions: string[]; id: string; shortcut?: string; tutorial?: string }[] = [
         { name: "formats.text", extensions: ["txt"], id: "txt" },
         { name: "CSV", extensions: ["csv"], id: "csv" },
-        { name: "ChordPro", extensions: ["cho", "crd", "chopro", "chordpro", "chord", "pro", "txt", "onsong"], id: "chordpro" },
-        { name: "Word", extensions: ["doc", "docx"], id: "word" },
-        { name: "ProPresenter", extensions: ["pro4", "pro5", "pro6", "pro", "json", "proBundle"], id: "propresenter" },
-        {
-            name: "EasyWorship",
-            extensions: ["db"],
-            id: "easyworship",
-            tutorial: "Import the <b>SongsWords.db/SongWords.db</b> file from the Data folder!<br>Optionally select <b>Songs.db</b> at the same time to also import title/metadata.<br><br>Often located in the Documents folder:<br><i>Documents/Softouch/EasyWorship/Default/v6.1/Databases/Data/</i>"
-        },
-        {
-            name: "VideoPsalm",
-            extensions: ["json", "vpc"],
-            id: "videopsalm",
-            tutorial: "Find the .vpc or .json file(s) often located in Documents\\VideoPsalm\\Songbooks"
-        },
-        { name: "OpenLP/OpenLyrics", extensions: ["xml", "sqlite"], id: "openlp" },
-        { name: "OpenSong", extensions: [], id: "opensong" },
-        { name: "MediaShout", extensions: ["ssc", "xml", "mdb"], id: "mediashout" }, // SSC (Songs5.mdb)
-        { name: "Quelea", extensions: ["xml", "qsp"], id: "quelea" },
-        { name: "SoftProjector", extensions: ["sps"], id: "softprojector" },
-        { name: "Songbeamer", extensions: ["sng"], id: "songbeamer" },
-        { name: "Easyslides", extensions: ["xml"], id: "easyslides" },
-        { name: "VerseVIEW", extensions: ["xml"], id: "verseview" }
+        { name: "Word", extensions: ["doc", "docx"], id: "word" }
     ]
 
     const media_formats = [
-        { name: "Lessons.church", title: "ChurchApps\nhttps://lessons.church", extensions: ["json", "olp", "olf"], id: "lessons" },
         { name: "PDF", title: "Added to your project", extensions: ["pdf"], id: "pdf" },
-        { name: "PowerPoint", extensions: [], id: "powerpoint" }
+        { name: "PowerPoint", title: "Added to your project and the PowerPoints tab (keeps animations)", extensions: [], id: "powerpoint" }
     ]
 
-    const powerpoint_options = [
-        { name: "info.slides", description: "Imperfect formatting.", icon: "txt", click: pptText },
-        { name: "PDF", description: `Requires LibreOffice${$os.platform === "linux" ? "" : " or PowerPoint"} installed.`, icon: "pdf", click: convertToPdf },
-        { name: "PDF (Online)", description: "Requires network connection, and manual steps.", icon: "pdf", click: onlineConvert },
-        { name: $os.platform === "win32" ? "PowerPoint" : "Controller (Deprecated)", description: $os.platform === "win32" ? "Requires PowerPoint installed. Keeps animations, transitions and videos." : "Requires PowerPoint/Keynote installed. Useful for live streams, but buggy.", icon: "powerkey", click: pptController }
-    ]
-
-    function pptText() {
-        sendMain(Main.IMPORT, { channel: "powerpoint", format: { name: "PowerPoint", extensions: ["ppt", "pptx"] } })
+    async function importPowerPoint() {
         activePopup.set(null)
-    }
-    function convertToPdf() {
-        sendMain(Main.PPT_TO_PDF)
-    }
-    function onlineConvert() {
-        sendMain(Main.URL, "https://www.ilovepdf.com/powerpoint_to_pdf")
-        // https://cloudconvert.com/ppt-to-jpg
-        activePopup.set(null)
-    }
-    function pptController() {
-        sendMain(Main.IMPORT, { channel: "powerkey", format: { name: "PowerPoint/Keynote", extensions: presentationExtensions } })
+        await importPresentationsToProject()
     }
 
     function displayTutorial(format: any) {
@@ -113,24 +71,7 @@
     let openedPage = ""
 </script>
 
-{#if openedPage === "powerpoint"}
-    <MaterialButton class="popup-back" icon="back" iconSize={1.3} title="actions.back" on:click={() => (openedPage = "")} />
-
-    <div style="display: flex;flex-direction: column;gap: 5px;">
-        {#each powerpoint_options as option}
-            <MaterialButton variant="outlined" style="justify-content: start;flex: 1;min-height: 50px;font-weight: normal;" on:click={() => option.click()}>
-                <img style="height: 60px;width: 70px;" src="./import-logos/{option.icon}.webp" alt="{option.name}-logo" draggable={false} />
-
-                <div style="display: flex;flex-direction: column;align-items: start;gap: 5px;">
-                    <p style="font-size: 1.1em;">{translateText(option.name)}</p>
-                    <span style="opacity: 0.5;">{translateText(option.description)}</span>
-                </div>
-            </MaterialButton>
-        {/each}
-    </div>
-
-    <Tip value="The best option would generally be to get a hold of the presentation as PDF format in the first place." top={20} />
-{:else if openedPage === "freeshow_more"}
+{#if openedPage === "freeshow_more"}
     <MaterialButton class="popup-back" icon="back" iconSize={1.3} title="actions.back" on:click={() => (openedPage = "")} />
 
     <div style="display: flex;gap: 5px;">
@@ -173,7 +114,7 @@
                     style="justify-content: start;flex: 1;min-height: 50px;font-weight: normal;"
                     on:click={() => {
                         if (format.id === "powerpoint") {
-                            pptText()
+                            importPowerPoint()
                             return
                         }
 
@@ -191,7 +132,7 @@
     <HRule title="settings.text_import" />
 
     <div style="display: flex;gap: 5px;">
-        {#each text_formats.filter((a) => ["txt", "chordpro"].includes(a.id)) as format}
+        {#each text_formats.filter((a) => a.id === "txt") as format}
             <MaterialButton
                 variant="outlined"
                 style="justify-content: start;flex: 1;min-height: 50px;font-weight: normal;"
@@ -270,8 +211,7 @@
                     style="justify-content: start;flex: 1;min-height: 50px;font-weight: normal;"
                     on:click={() => {
                         if (format.id === "powerpoint") {
-                            // openedPage = "powerpoint"
-                            pptText()
+                            importPowerPoint()
                             return
                         }
 
@@ -283,18 +223,6 @@
                     <p>{format.name}</p>
                 </MaterialButton>
 
-                {#if format.id === "powerpoint"}
-                    <MaterialButton
-                        variant="outlined"
-                        style="padding: 6px;"
-                        on:click={() => {
-                            openedPage = "powerpoint"
-                        }}
-                        title="create_show.more_options"
-                    >
-                        <Icon id="next" style="opacity: 0.6;" size={1.8} white />
-                    </MaterialButton>
-                {/if}
             </InputRow>
         {/each}
     </div>
