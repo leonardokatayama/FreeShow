@@ -38,6 +38,7 @@ import {
     outputs,
     overlayCategories,
     overlays,
+    pptFolders,
     popupData,
     profiles,
     projects,
@@ -365,6 +366,10 @@ const selectActions = {
     category_audio: () => {
         const newSelection: any[] = Object.keys(get(audioFolders))
         selected.set({ id: "category_audio", data: newSelection })
+    },
+    category_powerpoint: () => {
+        const newSelection: any[] = Object.keys(get(pptFolders))
+        selected.set({ id: "category_powerpoint", data: newSelection })
     },
     category_overlays: () => {
         const newSelection: any[] = Object.keys(get(overlayCategories))
@@ -874,6 +879,7 @@ const deleteActions = {
         if (get(audioPlaylists)[data[0]]) historyDelete("UPDATE", data, { updater: "audio_playlists" })
         else historyDelete("UPDATE", data, { updater: "category_audio" })
     },
+    category_powerpoint: (data: any) => historyDelete("UPDATE", data, { updater: "category_powerpoint" }),
     category_overlays: (data: any) => historyDelete("UPDATE", data, { updater: "category_overlays" }),
     category_templates: (data: any) => historyDelete("UPDATE", data, { updater: "category_templates" }),
     player: (data: any) => historyDelete("UPDATE", data, { updater: "player_video" }),
