@@ -114,6 +114,8 @@ export enum Main {
     START_SLIDESHOW = "START_SLIDESHOW",
     PRESENTATION_CONTROL = "PRESENTATION_CONTROL",
     PRESENTATION_PRELOAD = "PRESENTATION_PRELOAD",
+    PRESENTATION_LIBRARY = "PRESENTATION_LIBRARY",
+    PRESENTATION_ADD = "PRESENTATION_ADD",
     START = "START",
     STOP = "STOP",
     SERVER_DATA = "SERVER_DATA",
@@ -367,6 +369,8 @@ export interface MainReturnPayloads {
     [Main.READ_AUDIO_METADATA]: Promise<any>
     [Main.CAPTURE_SLIDE]: Promise<{ base64: string } | null>
     [Main.SLIDESHOW_GET_APPS]: string[]
+    [Main.PRESENTATION_LIBRARY]: string
+    [Main.PRESENTATION_ADD]: Promise<string[]>
     [Main.GET_MIDI_OUTPUTS]: { name: string }[]
     [Main.GET_MIDI_INPUTS]: { name: string }[]
     [Main.GET_LYRICS]: Promise<{ lyrics: string; source: string; title: string; artist: string }>

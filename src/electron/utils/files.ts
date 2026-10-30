@@ -343,6 +343,7 @@ export const dataFolderNames = {
     media: "Media",
     exports: "Exports",
     imports: "Imports",
+    powerpoint: "PowerPoint",
     lessons: "Lessons",
     planningcenter: "Planning Center",
     recordings: "Recordings",
