@@ -7,7 +7,7 @@ import { translateText } from "../../utils/language"
 import { updateThemeValues } from "../../utils/updateSettings"
 import { EMPTY_CATEGORY, EMPTY_EFFECT, EMPTY_EVENT, EMPTY_LAYOUT, EMPTY_PLAYER_VIDEO, EMPTY_PROJECT, EMPTY_PROJECT_FOLDER, EMPTY_SCENE, EMPTY_SECTION, EMPTY_SLIDE, EMPTY_STAGE, EMPTY_TAG } from "../../values/empty"
 import { getWeekNumber } from "../drawer/calendar/calendar"
-import { audioFolders, categories, mediaFolders, outputs, overlayCategories, templateCategories, templates } from "./../../stores"
+import { audioFolders, categories, mediaFolders, outputs, overlayCategories, pptFolders, templateCategories, templates } from "./../../stores"
 import { clone, keysToID, sortByName } from "./array"
 import { addToPos } from "./mover"
 import { isOutCleared } from "./output"
@@ -260,6 +260,7 @@ export const _updaters = {
     },
     category_media: { store: mediaFolders, ...getDefaultCategoryUpdater("media") },
     category_audio: { store: audioFolders, ...getDefaultCategoryUpdater("audio") },
+    category_powerpoint: { store: pptFolders, ...getDefaultCategoryUpdater("powerpoint") },
     audio_playlists: { store: audioPlaylists, ...getDefaultCategoryUpdater("audio"), empty: { name: "", songs: [] } },
     audio_playlist_key: { store: audioPlaylists },
 

@@ -12,7 +12,9 @@ export const drawerTabs = {
     scripture: { name: "tabs.scripture", icon: "scripture", title: "" },
     calendar: { name: "tabs.calendar", icon: "calendar", title: "" },
 
-    functions: { name: "tabs.functions", icon: "functions", title: "" }
+    functions: { name: "tabs.functions", icon: "functions", title: "" },
+
+    powerpoint: { name: "tabs.powerpoint", icon: "display", title: "" }
 }
 
 // export const drawerTabs = {

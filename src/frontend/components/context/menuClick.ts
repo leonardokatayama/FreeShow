@@ -35,6 +35,7 @@ import {
     activeVariableTagFilter,
     audioChannelsData,
     audioFolders,
+    pptFolders,
     categories,
     cloudSyncData,
     colorbars,
@@ -931,6 +932,11 @@ const clickActions = {
             return
         }
 
+        if (obj.contextElem?.classList.contains("#category_powerpoint") || obj.sel?.id === "category_powerpoint") {
+            sendMain(Main.OPEN_FOLDER, { channel: "POWERPOINT", title: translateText("new.folder") })
+            return
+        }
+
         // ?.closest(".projectItem") // might be at root
         if (obj.contextElem) {
             let parent = obj.sel?.data[0]?.id || obj.contextElem.id || "/"
@@ -1776,6 +1782,7 @@ const clickActions = {
         let data = obj.sel.data[0]
         if (obj.sel.id === "category_media") data = get(mediaFolders)[data]
         else if (obj.sel.id === "category_audio") data = get(audioFolders)[data]
+        else if (obj.sel.id === "category_powerpoint") data = get(pptFolders)[data]
 
         const path = data?.path ?? obj.contextElem?.id
         if (!path) return

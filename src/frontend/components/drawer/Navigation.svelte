@@ -5,11 +5,12 @@
     import FunctionsTabs from "./navigation/FunctionsTabs.svelte"
     import MediaTabs from "./navigation/MediaTabs.svelte"
     import OverlaysTabs from "./navigation/OverlaysTabs.svelte"
+    import PowerPointTabs from "./navigation/PowerPointTabs.svelte"
     import ScriptureTabs from "./navigation/ScriptureTabs.svelte"
     import ShowsTabs from "./navigation/ShowsTabs.svelte"
     import TemplatesTabs from "./navigation/TemplatesTabs.svelte"
 
-    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers"
+    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers" | "powerpoint"
 </script>
 
 <div class="main">
@@ -32,6 +33,8 @@
                     <OverlaysTabs />
                 {:else if id === "templates"}
                     <TemplatesTabs />
+                {:else if id === "powerpoint"}
+                    <PowerPointTabs />
                 {/if}
             </DropArea>
         {/if}

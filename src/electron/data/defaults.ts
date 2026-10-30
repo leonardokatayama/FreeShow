@@ -41,6 +41,7 @@ export const defaultSettings: { [key in SaveListSettings]: any } = {
     maxConnections: 10,
     mediaFolders: {},
     audioFolders: {},
+    pptFolders: {},
     resized: {
         leftPanel: 290,
         rightPanel: 290,

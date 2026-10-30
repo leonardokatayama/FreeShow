@@ -425,6 +425,8 @@
         "media": "Media",
         "overlays": "Overlays",
         "audio": "Audio",
+        "powerpoint": "PowerPoints",
+        "powerpoint_library": "Library",
         "effects": "Effects",
         "scripture": "Scripture",
         "calendar": "Calendar",

@@ -280,6 +280,7 @@ export const deletedDefaults: Writable<{ [key: string]: string[] }> = writable({
 
 // AUDIO
 export const audioFolders: Writable<Categories> = writable({}) // {default}
+export const pptFolders: Writable<Categories> = writable({}) // system folders shown in the PowerPoints tab (besides the library)
 export const audioStreams: Writable<{ [key: string]: AudioStream }> = writable({}) // {}
 export const audioPlaylists: Writable<{ [key: string]: Playlist }> = writable({}) // {}
 export const audioChannelsData: Writable<{ [key: string]: AudioChannelData }> = writable({}) // {}
@@ -479,6 +480,7 @@ export const $ = {
     overlayCategories,
     overlays,
     audioFolders,
+    pptFolders,
     playerVideos,
     templateCategories,
     templates,

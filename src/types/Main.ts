@@ -92,6 +92,7 @@ export type SelectIds =
     | "category_media"
     | "category_overlays"
     | "category_audio"
+    | "category_powerpoint"
     | "category_scripture"
     | "category_templates"
     | "category_player"

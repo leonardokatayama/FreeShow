@@ -48,6 +48,7 @@ export type SaveListSettings =
     | "activeProject"
     | "alertUpdates"
     | "audioFolders"
+    | "pptFolders"
     | "autoOutput"
     | "autosave"
     | "timeFormat"
