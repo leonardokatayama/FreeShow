@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-10-30T08:59:53Z",
+  "schema_version": 1,
+  "inputs": {
+    ".github/workflows/build.yml": "sha256:d02bd5690b7c4338add1f53752704291613c63ca8badc989f7e128fc64db187a",
+    ".github/workflows/ci.yml": "sha256:d171484293bcf1275e7d7d7a17cb5abf102c073011380a066ee10d57c2cadb4d",
+    ".github/workflows/playwright.yml": "sha256:41d8c850c7b4b6cd34ae2dbf9f89778b4cee7a296cbdd5d86d442c4fc7608686",
+    ".github/workflows/release.yml": "sha256:22487fb2c714c2e047ee336e314ad3263341cad37254c0af9e0d00d85258f8e4",
+    ".github/workflows/winget.yml": "sha256:c17d232b99b2643c920b68f035470400dae153aedbe2f5a4e9bea8c5fab56035",
+    "package.json": "sha256:c09eac2681547ea74396ac3bb32a970059b5a051220a68a5df149018fd192a8e"
+  },
+  "projects": [
+    {
+      "path": ".",
+      "ecosystem": "node",
+      "package_manager": "npm",
+      "languages": [
+        "typescript"
+      ],
+      "frameworks": [
+        {
+          "name": "express",
+          "source": "package.json"
+        },
+        {
+          "name": "svelte",
+          "source": "package.json"
+        },
+        {
+          "name": "electron",
+          "source": "package.json"
+        }
+      ],
+      "databases": [
+        {
+          "name": "sqlite",
+          "source": "package.json"
+        }
+      ],
+      "test_runners": [
+        {
+          "name": "vitest",
+          "source": "package.json"
+        },
+        {
+          "name": "playwright",
+          "source": "package.json"
+        }
+      ],
+      "tools": [
+        {
+          "name": "eslint",
+          "source": "package.json"
+        },
+        {
+          "name": "prettier",
+          "source": "package.json"
+        },
+        {
+          "name": "typescript",
+          "source": "package.json"
+        }
+      ],
+      "gates": {
+        "focused": "npx vitest run {files}",
+        "quick": "npm run test:unit",
+        "full": "npm run test",
+        "build": "npm run lint && npm run build",
+        "suite": "npm run test"
+      }
+    }
+  ],
+  "gates": {
+    "focused": "npx vitest run {files}",
+    "quick": "npm run test:unit",
+    "full": "npm run test",
+    "build": "npm run lint && npm run build",
+    "suite": "npm run test"
+  },
+  "ci": [
+    ".github/workflows/build.yml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/playwright.yml",
+    ".github/workflows/release.yml",
+    ".github/workflows/winget.yml"
+  ],
+  "containers": [],
+  "services": [],
+  "risk": [
+    {
+      "pattern": "**/.env*",
+      "category": "secrets",
+      "evidence": "default"
+    },
+    {
+      "pattern": ".github/workflows/**",
+      "category": "infra",
+      "evidence": ".github/workflows/build.yml"
+    },
+    {
+      "pattern": "src/frontend/ai/llm/llmSession.ts",
+      "category": "auth",
+      "evidence": "src/frontend/ai/llm/llmSession.ts"
+    },
+    {
+      "pattern": "src/server/remote/components/Auth.svelte",
+      "category": "auth",
+      "evidence": "src/server/remote/components/Auth.svelte"
+    }
+  ],
+  "warnings": [],
+  "notes": {
+    "architecture": "Electron desktop app (presentation software for churches). src/electron = main process: IPC handlers (IPC/responsesMain.ts), output windows/capture (output/), data and storage (data/), local servers, NDI/Blackmagic/streaming. src/frontend = Svelte 4 renderer: global stores in stores.ts, UI in components/, importers in converters/. src/server = small Svelte web apps (remote, stage, controller, cam) served on the LAN. src/types = shared types, including the IPC enums and payload maps.",
+    "conventions": [
+      "New IPC message: add the enum and payload type in src/types/IPC/Main.ts or ToMain.ts, then the handler in src/electron/IPC/responsesMain.ts or src/frontend/IPC/responsesMain.ts",
+      "Unit tests are *.test.ts next to the source, run by vitest with config/testing/vitest.config.ts; mock ../IPC/main and ../utils/files, use os.tmpdir() for files",
+      "Output windows are separate renderers: frontend stores are not shared with them unless explicitly sent",
+      "Platform-specific code branches on isWindows/isMac/isLinux exported from src/electron/index.ts",
+      "UI strings live in public/lang/en.json (translateText / <T id>)",
+      "Prettier config is config/formatting/.prettierrc.yaml; format and svelte-check have a pre-existing backlog, compare before/after instead of expecting zero"
+    ],
+    "risks": [
+      "Native modules (NDI, Blackmagic, better-sqlite3, opus) must be built on the target OS; installers built from WSL/Linux break on Windows",
+      "Windows/macOS-only code (PowerPoint COM bridge in src/electron/output/ppt/) cannot run under WSL; test on a real Windows build",
+      "User data lives in Documents/FreeShow (shows, projects, backups); changes to data formats need migration and must not lose data",
+      "Remote/stage/controller servers are reachable on the LAN; keep their auth and inputs validated"
+    ],
+    "inputs_digest": "sha256:4a6086167869bd486824437145b84d6bcc4ac976c932c4f8f30e52b9176cc213",
+    "written_at": "2026-10-30T08:59:53Z"
+  }
+}

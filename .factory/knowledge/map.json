@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "modules": {
+    "src/electron/omt": {
+      "summary": "Open Media Transport (OMT) video output sender, like NDI",
+      "keywords": [
+        "omt",
+        "transmissão de vídeo",
+        "video over network"
+      ],
+      "digest": "47690511745cd9afd20b1b7228844d422499f92e",
+      "described_at": "2026-10-30T09:00:03Z",
+      "source": "session"
+    },
+    "src/electron/contentProviders": {
+      "summary": "Integrations that import media/lessons from external services (ChurchApps, Canva, Amazing Life)",
+      "keywords": [
+        "content provider",
+        "provedor de conteúdo",
+        "integração"
+      ],
+      "digest": "9e8a223dfa6e1addd981a8fb570a0bfc2b9dc683",
+      "described_at": "2026-10-30T09:00:03Z",
+      "source": "session"
+    },
+    "src/electron/capture": {
+      "summary": "Captures output window frames and sends them to NDI/OMT/Blackmagic/stream and preview",
+      "keywords": [
+        "frame capture",
+        "captura de tela",
+        "preview"
+      ],
+      "digest": "a76889a5c70e3bb4b140e3cd9da2e52f161985b5",
+      "described_at": "2026-10-30T09:00:04Z",
+      "source": "session"
+    },
+    "src/electron/output": {
+      "summary": "Creates and manages output windows (projector screens), bounds, visibility; ppt/ holds PowerPoint import and native control",
+      "keywords": [
+        "output window",
+        "saída",
+        "telão",
+        "powerpoint"
+      ],
+      "digest": "146a95da9e195b04434073888dac04dd826ae4e7",
+      "described_at": "2026-10-30T09:00:04Z",
+      "source": "session"
+    }
+  }
+}

@@ -1,0 +1,2 @@
+# Machine-local factory state: runs, journal, gate logs, locks.
+local/
