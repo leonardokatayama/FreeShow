@@ -3,7 +3,7 @@ import fs from "fs"
 import os from "os"
 import path from "path"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-import { buildEncoderCommand } from "./encoderProfiles"
+import { buildEncoderCommand, type EncoderId } from "./encoderProfiles"
 
 // only encoder resolution is faked; the ffmpeg processes are real
 const mocked = vi.hoisted(() => ({ encoder: "x264" }))
@@ -14,7 +14,8 @@ vi.mock("./encoderDetection", () => ({
 vi.mock("./ffmpegManager", () => ({ resolveFfmpegPath: async () => "ffmpeg" }))
 
 const { RtmpStreamer, setRtmpStatusListener, setRtmpNoticeListener, setRtmpResolvers } = await import("./RtmpStreamer")
-setRtmpResolvers({ resolveFfmpegPath: async () => "ffmpeg", resolveEncoder: async () => "x264" })
+// RtmpStreamer resolves through these, so the encoder must follow `mocked` for the fallback test to request vaapi
+setRtmpResolvers({ resolveFfmpegPath: async () => "ffmpeg", resolveEncoder: async () => mocked.encoder as EncoderId })
 
 function hasFfmpeg(): boolean {
     try {
@@ -81,18 +82,24 @@ describeIfFfmpeg("RTMP pipeline (real ffmpeg)", () => {
 
         const ffmpeg = spawn("ffmpeg", args, { stdio: ["pipe", "pipe", "pipe"] })
         const chunks: Buffer[] = []
+        let stderr = ""
         ffmpeg.stdout.on("data", (c) => chunks.push(c))
+        ffmpeg.stderr.on("data", (c) => (stderr += c))
+        // a fast encode can exit before the pipe is drained; surface that through the assertions, not as an unhandled EPIPE
+        ffmpeg.stdin.on("error", () => {})
+        // listen before writing: ffmpeg often finishes well before the stop timeout below
+        const exited = new Promise((resolve) => ffmpeg.on("close", resolve))
 
         for (let i = 0; i < FPS; i++) ffmpeg.stdin.write(bgraFrame(i * 8))
         ffmpeg.stdin.end()
 
         // wait for encoding to finish buffered frames then stop
-        await new Promise((r) => setTimeout(r, 600))
-        ffmpeg.kill("SIGTERM")
-        await new Promise((resolve) => ffmpeg.on("exit", resolve))
+        const timeout = setTimeout(() => ffmpeg.kill("SIGTERM"), 600)
+        await exited
+        clearTimeout(timeout)
 
         const output = Buffer.concat(chunks)
-        expect(output.length).toBeGreaterThan(0)
+        expect(output.length, stderr).toBeGreaterThan(0)
         // every FLV stream starts with 'F', 'L', 'V' (0x46, 0x4c, 0x56)
         expect(output[0]).toBe(0x46)
         expect(output.subarray(0, 3).toString("ascii")).toBe("FLV")

@@ -326,6 +326,9 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
                 localMergedIn = true
                 if (!CHANGES.fileModified) CHANGES.fileModified = {}
                 CHANGES.fileModified[id] = Math.max(CHANGES.fileModified[id] || 0, localFileModified)
+            } else if (JSON.stringify(cloudFileData) !== JSON.stringify(localStore.store)) {
+                // Local wins by file mtime (untracked): upload only if the content actually differs.
+                localMergedIn = true
             }
             return
         }
@@ -438,7 +441,7 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
         if (result.action === "delete") deleteFile(localBiblePath)
     }
 
-    if (readOnly || (!localMergedIn && !ledger.localMergedIn)) {
+    if (readOnly || (!localMergedIn && !ledger.localMergedIn && !hasLedgerChanged())) {
         // store the last modified cloud time, to prevent overwriting cloud data with old local data
         if (guardCloudModifiedAt > 0) {
             const syncCache = getStore("CACHE_SYNC") || {}
@@ -724,6 +727,12 @@ function getLatestChanges() {
     if (!CHANGES.modified) CHANGES.modified = {}
     CHANGES.modified[deviceId] = Date.now()
     return CHANGES
+}
+
+// device list or created/deleted marks changed this run (e.g. acknowledging a created item), so the cloud ledger must be updated
+function hasLedgerChanged() {
+    const getLedger = (changes: Changes | null) => JSON.stringify({ devices: changes?.devices, created: changes?.created, deleted: changes?.deleted })
+    return getLedger(CHANGES) !== getLedger(cloudChanges)
 }
 
 let _deviceId = ""
