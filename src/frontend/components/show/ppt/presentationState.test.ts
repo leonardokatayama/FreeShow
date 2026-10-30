@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isPresentationAtEdge } from "./presentationState"
+import { getPreloadPaths, isPresentationAtEdge } from "./presentationState"
 
 const ID = "C:\\slides\\deck.pptx"
 let data: any = {}
@@ -42,5 +42,40 @@ describe("isPresentationAtEdge", () => {
         expect(isPresentationAtEdge(data, ID, true)).toBe(true)
         setState({ position: 2, slides: 3 })
         expect(isPresentationAtEdge(data, ID, true)).toBe(false)
+    })
+})
+
+describe("getPreloadPaths", () => {
+    const items = [
+        { id: "song1", type: "show" },
+        { id: "a.pptx", type: "ppt" },
+        { id: "song2", type: "show" },
+        { id: "b.pptx", type: "ppt" },
+        { id: "a.pptx", type: "ppt" }
+    ]
+
+    it("preloads nothing when turned off", () => {
+        expect(getPreloadPaths(items, 0, "none")).toEqual([])
+    })
+
+    it("preloads the next PowerPoint from the active item", () => {
+        expect(getPreloadPaths(items, 0, "next")).toEqual(["a.pptx"])
+        expect(getPreloadPaths(items, 2, "next")).toEqual(["b.pptx"])
+    })
+
+    it("keeps the active PowerPoint preloaded", () => {
+        expect(getPreloadPaths(items, 3, "next")).toEqual(["b.pptx"])
+    })
+
+    it("starts from the top when nothing in the project is active", () => {
+        expect(getPreloadPaths(items, undefined, "next")).toEqual(["a.pptx"])
+    })
+
+    it("preloads nothing after the last PowerPoint", () => {
+        expect(getPreloadPaths(items.slice(0, 3), 2, "next")).toEqual([])
+    })
+
+    it("preloads every PowerPoint once", () => {
+        expect(getPreloadPaths(items, 0, "all")).toEqual(["a.pptx", "b.pptx"])
     })
 })

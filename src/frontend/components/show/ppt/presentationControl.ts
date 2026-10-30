@@ -3,11 +3,12 @@ import { Main } from "../../../../types/IPC/Main"
 import { REMOTE } from "../../../../types/Channels"
 import type { ToMain, ToMainSendPayloads } from "../../../../types/IPC/ToMain"
 import { sendMain } from "../../../IPC/main"
-import { outLocked, outputs, presentationData, special } from "../../../stores"
+import { activeProject, activeShow, os, outLocked, outputs, presentationData, projects, special } from "../../../stores"
 import { sendData } from "../../../utils/sendData"
 import { getFileName, removeExtension } from "../../helpers/media"
 import { getActiveOutputs, setOutput } from "../../helpers/output"
 import { clearBackground, clearSlide } from "../../output/clear"
+import { DEFAULT_PRESENTATION_PRELOAD, getPreloadPaths } from "./presentationState"
 
 // PowerPoint/Keynote slide show started from the PowerPoint view or the API (Remote)
 
@@ -45,4 +46,22 @@ export function receivePresentationState(data: ToMainSendPayloads[ToMain.PRESENT
     setOutput("slide", { type: "ppt", id: data.id, name: starting.name, page: (data.stat?.position || 1) - 1, pages: data.stat?.slides })
     clearBackground()
     starting = null
+}
+
+// keep the project's PowerPoint files open in the background (Settings > Outputs), so they start instantly
+let preloaded = ""
+export function watchPresentationPreload() {
+    const update = () => {
+        if (get(os).platform !== "win32") return
+
+        const items = get(projects)[get(activeProject) || ""]?.shows || []
+        const paths = getPreloadPaths(items, get(activeShow)?.index, get(special).presentationPreload || DEFAULT_PRESENTATION_PRELOAD)
+
+        const key = JSON.stringify(paths)
+        if (key === preloaded) return
+        preloaded = key
+        sendMain(Main.PRESENTATION_PRELOAD, { paths })
+    }
+
+    ;[os, special, projects, activeProject, activeShow].forEach((store) => store.subscribe(update))
 }

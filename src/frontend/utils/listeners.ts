@@ -67,6 +67,7 @@ import {
 import { hasNewerUpdate } from "./common"
 import { driveConnect } from "./drive"
 import { convertBackgrounds, getFilteredAudioChannels } from "./remoteTalk"
+import { watchPresentationPreload } from "../components/show/ppt/presentationControl"
 import { send } from "./request"
 import { arrayToObject, eachConnection, filterObjectArray, sendData, timedout } from "./sendData"
 
@@ -460,6 +461,8 @@ export function storeSubscriber() {
             refreshSlideThumbnails.set(false)
         })
     })
+
+    watchPresentationPreload()
 }
 
 const initalOutputData = {
